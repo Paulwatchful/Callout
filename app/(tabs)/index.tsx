@@ -1,25 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import * as SMS from 'expo-sms';
-// Adjust the import below based on your folder structure:
-import { setupDatabase, saveStatus, getLatestStatus } from '../../src/database';
-import * as DB from '../../src/database';
-console.log('DB module:', DB);
+import { useNavigation } from 'expo-router';
+import { setupDatabase, saveStatus, getLatestStatus } from '@src/database';
 
 export default function TabOneScreen() {
   const [status, setStatus] = useState<string>('Off Call');
+  const navigation = useNavigation();
+
+  // Update header title and style dynamically
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: status,
+      headerStyle: { backgroundColor: status === 'On Call' ? 'green' : 'red' },
+      headerTintColor: '#fff', // White text for header
+    });
+  }, [navigation, status]);
 
   useEffect(() => {
     // Initialize the database and fetch the latest status on mount.
     setupDatabase()
       .then(() => getLatestStatus())
-      .then((latest) => {
+      .then((latest: string | null) => {
         if (latest) {
           setStatus(latest);
         }
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error('Error setting up database or fetching status:', error);
       });
   }, []);
@@ -41,7 +49,7 @@ export default function TabOneScreen() {
       } else {
         console.log('SMS is not available on this device.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling status:', error);
     }
   };
