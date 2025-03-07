@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import * as SMS from 'expo-sms';
 import { useNavigation } from 'expo-router';
 import { setupDatabase, saveStatus, getLatestStatus } from '@src/database';
-// Import react-native-mobile-sms for direct SMS sending on Android
-import mobileSms from 'react-native-mobile-sms';
 
 export default function TabOneScreen() {
   const [status, setStatus] = useState<string>('Off Call');
@@ -26,7 +25,7 @@ export default function TabOneScreen() {
           setStatus(latest);
         }
       })
-      .catch((error: any) => {
+      .catch((error) => {
         console.error('Error setting up database or fetching status:', error);
       });
   }, []);
@@ -38,23 +37,18 @@ export default function TabOneScreen() {
       await saveStatus(newStatus);
       console.log('Status saved:', newStatus);
 
-      // Prepare the SMS message: "8" for On Call, "9" for Off Call
+      // Prepare the SMS message
       const message = newStatus === 'On Call' ? '8' : '9';
-      
-      // Check if the platform is Android before using react-native-mobile-sms
-      if (Platform.OS === 'android') {
-        mobileSms.sendDirectSms('07537415757', message)
-        .then((response: any) => {
-          console.log('SMS sent successfully:', response);
-        })
-        
-          .catch((error: any) => {
-            console.error('Error sending SMS:', error);
-          });
+
+      // Send SMS using expo-sms
+      const isAvailable = await SMS.isAvailableAsync();
+      if (isAvailable) {
+        await SMS.sendSMSAsync(['07537415757'], message);
+        console.log('SMS sent successfully.');
       } else {
-        console.log('Direct SMS sending is only supported on Android.');
+        console.log('SMS is not available on this device.');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error toggling status:', error);
     }
   };
