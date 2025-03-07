@@ -21,7 +21,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "jsEngine": "hermes"
+      "jsEngine": "hermes",
+      "permissions": [
+        "SEND_SMS"
+      ],
+      "package": "com.callout"
     },
     "web": {
       "bundler": "metro",
